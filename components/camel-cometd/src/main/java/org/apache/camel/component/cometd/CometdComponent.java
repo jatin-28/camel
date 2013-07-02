@@ -16,15 +16,6 @@
  */
 package org.apache.camel.component.cometd;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.net.ssl.SSLContext;
-
 import org.apache.camel.Endpoint;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.impl.DefaultComponent;
@@ -51,6 +42,10 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import java.net.URL;
+import java.util.*;
+
 /**
  * Component for Jetty Cometd
  */
@@ -64,6 +59,8 @@ public class CometdComponent extends DefaultComponent {
     private String sslKeystore;
     private SecurityPolicy securityPolicy;
     private List<BayeuxServer.Extension> extensions;
+    private List<BayeuxServer.BayeuxServerListener> serverListeners;
+
     private SSLContextParameters sslContextParameters;
 
     class ConnectorRef {
@@ -140,6 +137,11 @@ public class CometdComponent extends DefaultComponent {
             if (extensions != null) {
                 for (BayeuxServer.Extension extension : extensions) {
                     bayeux.addExtension(extension);
+                }
+            }
+            if( serverListeners != null) {
+                for (BayeuxServer.BayeuxServerListener serverListener : serverListeners) {
+                    bayeux.addListener(serverListener);
                 }
             }
             prodcon.setBayeux(bayeux);
@@ -283,7 +285,14 @@ public class CometdComponent extends DefaultComponent {
         }
         extensions.add(extension);
     }
-    
+
+    public void addServerListener(BayeuxServer.BayeuxServerListener serverListener) {
+        if( this.serverListeners == null) {
+            serverListeners = new ArrayList<BayeuxServer.BayeuxServerListener>();
+        }
+        serverListeners.add(serverListener);
+    }
+
     public SSLContextParameters getSslContextParameters() {
         return sslContextParameters;
     }
